@@ -2,8 +2,10 @@
 layout: about
 title: About Me
 permalink: /about/
-subtitle: 
+nav: true 
 nav_order: 3
+
+subtitle:
 
 profile:
   align: right
