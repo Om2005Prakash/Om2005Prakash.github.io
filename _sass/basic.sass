@@ -1,0 +1,69 @@
+body
+  font: 16px / #{$line-height} $font-family
+  font-size: $font-size
+  background: light(100, 16)
+  color: light(6, 100)
+
+p
+  text-align: justify
+
+a
+  color: $link
+  text-decoration: inherit
+  transition: .25s
+  article &:hover
+    text-decoration: underline
+  header &, footer &, aside &
+    color: inherit
+
+hr
+  border: 1px solid gray(100)
+  margin: 2em 0
+
+blockquote
+  background: gray(10)
+  color: light-dark(#555, #eee)
+  border-left: 3px solid gray(60)
+  padding: 1px 1.5em
+
+blockquote, figure
+  margin: 1.25em 0
+
+img
+  margin: .5em 0
+  border-radius: 4px
+  max-width: 100%
+
+li
+  margin: .3em 0
+
+table
+  display: inline-block
+  max-width: 100%
+  overflow-y: auto
+  border-collapse: collapse
+  border-radius: 2px
+
+th, td
+  padding: .5em 1em
+  border: 1px solid gray(24)
+
+thead, tr:hover
+  background: gray(12)
+
+pre
+  font-size: .8em
+  background: light(22)
+  color: light(100)
+  border-radius: 4px
+  margin: 1.5em 0
+  padding: .8em 1.2em
+  overflow-x: auto
+
+code:not(pre code)
+  font-size: .9em
+  background: gray(16)
+  border-radius: 3px
+  margin: 0 .1em
+  padding: .2em .4em
+  opacity: .75

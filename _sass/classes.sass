@@ -1,0 +1,72 @@
+.archive, .hover
+  -webkit-font-smoothing: antialiased
+
+.meta time
+  color: gray(100)
+
+.full
+  font-size: 1.5em
+  width: 100%
+  margin: .1em 0 .7em
+
+.hover
+  a
+    box-shadow: 0 2px transparent
+  a:hover
+    box-shadow: 0 2px
+  nav:has(svg) a:hover
+    color: gray(100)
+    box-shadow: none
+
+.more
+  padding: 1em 0
+
+.more a, .gray a, .dark a
+  border-radius: 4px
+  padding: .4em .8em
+
+.more a
+  border: 1.5px solid
+  border-color: $link
+  &:hover
+    color: light(100, 100)
+    background: $link
+    text-decoration: inherit
+
+.gray, .dark
+  flex-wrap: nowrap
+
+.gray a
+  background: gray(30)
+  opacity: .6
+  &:hover
+    background: gray(60)
+
+.dark a
+  background: light-dark(gray(20), gray(10))
+  &:hover
+    background: light(100)
+    color: light(0)
+
+.archive
+  font-size: 1.1em
+  list-style-type: none
+  padding: 1px 0
+  li
+    margin: .5em 0
+  a:not(:hover)
+    color: inherit
+  a:hover
+    text-decoration: inherit
+
+.katex-display
+  overflow: auto hidden
+
+.rouge-table, .gist
+  pre, tr, td
+    background: inherit!important
+    font-size: inherit
+    color: inherit
+    border: none
+    margin: 0 1.5em 0 0
+    padding: 0
