@@ -125,7 +125,7 @@ The results show that our method improves the *forget–retain tradeoff* by roug
 | Erasing Stable Diffusion (ESD) | 0.504 |
 | **Our Method (Null-Space Editing)** | **0.642** |
 
-![Single Concept Editing](https://raw.githubusercontent.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion/refs/heads/main/assets/forget_concept_concept_table.png)
+<!-- ![Single Concept Editing](https://raw.githubusercontent.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion/refs/heads/main/assets/forget_concept_concept_table.png) -->
 
 ---
 
