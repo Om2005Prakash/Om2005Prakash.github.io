@@ -1,43 +1,30 @@
 ---
-title:  "Unlearning Without Forgetting: A Journey to Safer Diffusion Models"
+title:  "Editing Concepts in Diffusion Models"
 mathjax: true
 layout: post
 categories: media
 ---
 
-Can a diffusion model forget — without losing everything else it knows?
+![CLIP Editing Results](https://raw.githubusercontent.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion/refs/heads/main/assets/results.png)
+
 
 
 Over the past few months, I’ve been exploring a deceptively simple question:  
-**Can a diffusion model forget — without losing everything else it knows?**  
+**Can a diffusion model forget — without losing everything else it knows?**
 
-As text-to-image models become increasingly capable, they also inherit the biases, copyrighted material, and harmful content of their massive training datasets. From the *LAION-5B* dataset to the web-scale corpora powering today’s generative models, the issue is no longer *if* these systems memorize undesirable concepts, but *how* we can make them unlearn responsibly.
+As text-to-image models become increasingly capable, they also inherit the biases, copyrighted material, and harmful content of their massive training datasets. From datasets like *LAION-5B* to other web-scale corpora powering today’s generative systems, the issue is no longer *if* these models memorize undesirable concepts, but *how* we can make them unlearn responsibly.
 
-This post shares my journey developing a method I call **Null-Space Constrained Concept Editing** — an approach that enables *selective forgetting* in diffusion models while preserving unrelated knowledge.  
-It’s a story of tinkering, equations, and the occasional moment of “wait, that actually works?”
-
----
-
-## Why We Need to Unlearn
-
-Diffusion models such as Stable Diffusion 1.4 have revolutionized creative generation. But beneath their breathtaking outputs lies a problem: these models often reproduce *sensitive*, *harmful*, or *copyrighted* concepts that were present in the training data.  
-
-Legal frameworks like **GDPR** and **CCPA** already demand a “right to be forgotten.” Yet in practice, retraining massive models from scratch every time someone or something needs to be “forgotten” is infeasible.  
-
-So, the question becomes:  
-> How can we surgically remove certain knowledge from a diffusion model *without retraining it* — and without damaging everything else?
-
-That question guided the rest of this work.
+Editing can serve as a form of unlearning — if we can edit an unwanted concept into a different, safe target concept, we can effectively “forget” the original one.  
+This post describes a method I call **Null-Space Constrained Concept Editing** — an approach that enables *selective forgetting* in diffusion models while preserving unrelated knowledge.
 
 ---
 
-## The Idea: Editing the Text Encoder, Not the Image Generator
+## Naive Editing
 
-Most concept-editing techniques target the **U-Net** — the heart of the diffusion model that turns noise into images. But what if the real key lies elsewhere?  
+Knowledge-editing methods have recently gained attention in large language models (LLMs).  
+I wanted to test whether those same methods could be applied to the **CLIP text encoder** used in diffusion models, which shares a similar architecture with LLMs.
 
-I realized that **CLIP’s text encoder** — the part that converts text prompts into embeddings — holds the conceptual DNA of the model. If we can modify how the text encoder represents certain ideas, we can effectively “forget” them at the root, before they even influence the image synthesis.
-
-So, I formulated a new editing objective for a single linear layer $$ W $$ in CLIP:
+A naive editing objective for a single linear layer \( W \) can be defined as:
 
 $$
 \min_{\tilde{\Delta}} \left( 
@@ -48,79 +35,88 @@ $$
 $$
 
 Here:
-- $$ K_1 $$ are the inputs corresponding to **concepts to be edited**,  
-- $$ K_0 $$ are the inputs for **concepts to be preserved**,  
-- $$ V_1 $$ and $$ V_0 $$ are their desired outputs.  
+- \( K_1 \): inputs corresponding to **concepts to be edited**,  
+- \( K_0 \): inputs for **concepts to be preserved**,  
+- \( V_1 \), \( V_0 \): their respective desired outputs.  
 
-This objective tries to *edit* certain concepts while *preserving* others.
+This objective attempts to *edit* certain concepts while *preserving* others. However, in practice, the preserved concepts can still be unintentionally distorted.
 
 ---
 
-## The Key Insight: The Null Space Trick
+## Null-Space Constrained Editing
 
-While the above works in principle, it can unintentionally distort preserved concepts.  
-The fix came from a beautiful piece of linear algebra: the **null space**.
+While the naive formulation works in principle, it often interferes with unrelated concepts.  
+A recent method called **AlphaEdit** ([arXiv:2410.02355](https://arxiv.org/abs/2410.02355)) brought a major improvement in knowledge editing by introducing a **null-space projection** — ensuring edits don’t overwrite existing knowledge.
 
-If we ensure that updates to $$ W $$ lie in the *left null space* of $$ K_0 $$, then the change won’t affect the preservation set at all.
+Inspired by this, I extended the idea to diffusion models.  
+We ensure that updates to \( W \) lie in the *left null space* of \( K_0 \) so that the preservation set remains unaffected.
 
-Formally, if $$ U $$ is an orthonormal basis for the null space of $$ K_0 $$ (so that $$ U^\top K_0 = 0 $$),  
-we define a projection matrix:
+Formally, if \( U \) is an orthonormal basis for the null space of \( K_0 \) (i.e., \( U^\top K_0 = 0 \)),  
+we define the projection matrix:
 
 $$
 P = U U^\top
 $$
 
-This gives a new constrained objective:
+This gives the constrained objective:
+
+$$
+\min_{\Delta} \| (W + \Delta P)K_1 - V_1 \|^2
++ 
+\| (W + \Delta P)K_0 - V_0 \|^2
+$$
+
+Since \( P K_0 = 0 \), the second term vanishes, leaving:
 
 $$
 \min_{\Delta} \| (W + \Delta P)K_1 - V_1 \|^2
 $$
 
-And its closed-form update turns out to be:
+The closed-form solution for this objective is:
 
 $$
-\Delta_{\text{edit}} = R K_1^\top P (K_1 K_1^\top P + I)^{-1}
+\Delta_{\text{edit}} = R K_1^\top P (K_1 K_1^\top P + I)^{-1}, \quad
+R = V_1 - W K_1
 $$
-where $$ R = V_1 - W K_1 $$.
 
-This simple projection guarantees that preserved knowledge remains intact — the model truly *forgets without forgetting*.
+This projection ensures that preserved knowledge remains completely intact — allowing the model to *forget without forgetting*.
 
 ---
 
 ## Making It Work: Guidance From the UNet
 
-A practical question arose:  
-> How do we choose the target embeddings $$ V_1 $$ for the concepts we want to edit?
+A subtle challenge remains:  
+> How do we choose the target embeddings \( V_1 \) for the concepts we want to edit?
 
-At first, I simply set $$ V_1 = W K_1^* $$, where $$ K_1^* $$ are the embeddings of the target (replacement) concepts.  
-But that quickly led to **overfitting** — the edits worked on direct prompts but failed on indirect ones.
+A naive choice is \( V_1 = W K_1^* \), where \( K_1^* \) are embeddings of the target (replacement) concepts.  
+However, this quickly leads to **overfitting** — edits perform well on training prompts but fail on unseen ones.
 
-The fix came from the **UNet itself**.  
-I designed a small refinement loop where $$ V_1 $$ is adjusted to ensure the UNet’s outputs for the edited and target prompts align:
+The fix came from leveraging the **UNet**.  
+I designed a small refinement loop that adjusts \( V_1 \) so that the UNet’s outputs for the edited and target prompts align:
 
 $$
 V_1^{(t+1)} = V_1^{(t)} - \eta \nabla_{V_1} \, \text{MSE}(\text{UNet}(V_1^{(t)}), \text{UNet}(V_1^*))
 $$
 
-This **UNet-guided refinement** provided stable targets that generalize well — even for indirect prompts that don’t mention the forgotten concept explicitly.
+This **UNet-guided refinement** provides stable target representations that generalize well — even for indirect prompts that don’t explicitly mention the forgotten concept.  
+For example, after editing “Van Gogh” → “Monet” in CLIP, the prompt *“starry night”* generated a Monet-style painting, even though “starry night” wasn’t seen during editing.
 
 ---
 
 ## Experiments: Unlearning in the Wild
 
-I evaluated this approach on **Stable Diffusion 1.4**, focusing on 20 diverse concepts (objects, art styles, and actions).  
-For each concept, I generated:
-- 10 prompts (5 direct, 5 indirect)
-- 20 images per prompt  
-and used **LLaVA v1.5 (7B)** to check whether the concept still appeared.
+The approach was evaluated on **Stable Diffusion 1.4**, using 20 diverse concepts (objects, actions, and art styles).  
+For each concept:
+- 10 prompts were used (5 direct, 5 indirect)  
+- 20 images were generated per prompt  
 
-Two key metrics guided the evaluation:
-- **Forget Score** — how effectively the concept was erased.
-- **Retain Score** — how well unrelated concepts were preserved.
+**LLaVA v1.5 (7B)** was used to detect whether each image contained the target concept.
 
-Here’s the punchline:  
-My method achieved a **20% higher harmonic mean** of forget and retain scores than previous baselines like ESD and UCE.  
-Even more excitingly, most concepts could be unlearned with *just one edit* in CLIP — compared to 30–40 edits when modifying the UNet directly.
+Two key metrics were computed:
+- **Forget Score** — fraction of images where the edited concept was *not recognized* by LLaVA.  
+- **Retain Score** — fraction of images where unedited concepts were *correctly recognized*.
+
+The results show that our method improves the *forget–retain tradeoff* by roughly **20%** compared to prior baselines, with most concepts unlearned using only **one edit** in CLIP.
 
 | Method | Harmonic Mean (Forget ⨉ Retain) |
 |:--------|:------------------------------:|
@@ -129,38 +125,22 @@ Even more excitingly, most concepts could be unlearned with *just one edit* in C
 | Erasing Stable Diffusion (ESD) | 0.504 |
 | **Our Method (Null-Space Editing)** | **0.642** |
 
----
-
-## What I Learned
-
-A few lessons stood out:
-
-1. **CLIP is where concepts live.**  
-   Editing CLIP’s feed-forward layers is vastly more effective than touching the UNet.
-
-2. **Linear algebra is your friend.**  
-   The null-space constraint might sound abstract, but it elegantly enforces “do no harm” to preserved knowledge.
-
-3. **Small edits can go a long way.**  
-   A single-layer edit in CLIP can shift entire conceptual behaviors in the generated images.
-
-4. **Evaluation matters.**  
-   Using a vision-language model like LLaVA for semantic checking turned out to be a robust way to measure forgetting.
+![Single Concept Editing](https://raw.githubusercontent.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion/refs/heads/main/assets/forget_concept_concept_table.png)
 
 ---
 
 ## Looking Ahead
 
-This method works surprisingly well, but it raises deeper questions:
+The method works remarkably well but raises a few open questions:
 
-- How many concepts can we edit before the model’s coherence breaks down?  
-- Can we automate prompt generation to prevent overfitting?  
-- Could causal tracing — similar to language model editing — reveal *which layers* encode specific concepts in CLIP?
+- How many concepts can be edited before the model’s coherence breaks down?  
+- Can we automate prompt generation to avoid overfitting?  
+- Could causal tracing — like in LLMs — reveal *which layers* encode specific concepts in CLIP?
 
-These are the threads I’m currently exploring.  
-The dream is a future where we can **responsibly unlearn** — where generative models respect privacy, creativity, and control without sacrificing their brilliance.
+These are the directions I’m currently exploring.  
+The long-term goal is to build diffusion models that can **responsibly unlearn** — preserving creativity and safety side by side.
 
-If you’d like to dive deeper, the full code and experiments are available on GitHub:  
+If you’d like to dive deeper, the full code and experiments are available here:  
 👉 [Om2005Prakash/Editing-Concepts-in-Stable-Diffusion](https://github.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion)
 
 ---
