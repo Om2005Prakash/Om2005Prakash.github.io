@@ -8,21 +8,23 @@ categories: media
 ![CLIP Editing Results](https://raw.githubusercontent.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion/refs/heads/main/assets/results.png)
 
 
+This is a solution write-up for our submittion at Unlearning and Model Editing (U&ME) Workshop at ICCV 25 (https://sites.google.com/view/u-and-me-workshop/), current leaderboard (https://shreyanshhub.github.io/GENMU-/leaderboard.html).
+For solution skip to section "Null-Space Constrained Editing"
 
+## Motivation for Unlearning
 Over the past few months, I’ve been exploring a deceptively simple question:  
 **Can a diffusion model forget — without losing everything else it knows?**
 
-As text-to-image models become increasingly capable, they also inherit the biases, copyrighted material, and harmful content of their massive training datasets. From datasets like *LAION-5B* to other web-scale corpora powering today’s generative systems, the issue is no longer *if* these models memorize undesirable concepts, but *how* we can make them unlearn responsibly.
+As text-to-image models become increasingly capable, they also inherit the biases, copyrighted material, and harmful content of their massive training datasets. From datasets like *LAION-5B* to other web-scale corpora powering today’s generative systems, the raises the issue *how* we can make them unlearn responsibly.
 
-Editing can serve as a form of unlearning — if we can edit an unwanted concept into a different, safe target concept, we can effectively “forget” the original one.  
-This post describes a method I call **Null-Space Constrained Concept Editing** — an approach that enables *selective forgetting* in diffusion models while preserving unrelated knowledge.
+Editing can serve as a form of unlearning — if we can edit an unwanted concept into a safe target concept, we can effectively “forget” the original one.  
+This post describes a method I call **Null-Space Constrained Concept Editing** — which is adapted from a paper called **AlphaEdit** ([arXiv:2410.02355](https://arxiv.org/abs/2410.02355)) that enables *selective editing* in diffusion models while preserving unrelated knowledge.
 
 ---
 
-## Naive Editing
+## How to perform Editing? (Naive Way)
 
-Knowledge-editing methods have recently gained attention in large language models (LLMs).  
-I wanted to test whether those same methods could be applied to the **CLIP text encoder** used in diffusion models, which shares a similar architecture with LLMs.
+<!-- Knowledge-editing methods have recently gained attention in large language models (LLMs) for similar safety concerns. So, I wanted to test whether those same methods could be applied to the **CLIP text encoder** used in diffusion models, which shares a similar architecture with LLMs. -->
 
 A naive editing objective for a single linear layer \( W \) can be defined as:
 
@@ -39,20 +41,17 @@ Here:
 - \( K_0 \): inputs for **concepts to be preserved**,  
 - \( V_1 \), \( V_0 \): their respective desired outputs.  
 
-This objective attempts to *edit* certain concepts while *preserving* others. However, in practice, the preserved concepts can still be unintentionally distorted.
+where V_0:= W K_0 i.e. the original outputs and V_1 are chosen s.t. to produce the desired edited output. This objective attempts to *edit* certain concepts while *preserving* others. However, in practice, the preserved concepts can still be unintentionally distorted.
 
 ---
 
 ## Null-Space Constrained Editing
 
-While the naive formulation works in principle, it often interferes with unrelated concepts.  
-A recent method called **AlphaEdit** ([arXiv:2410.02355](https://arxiv.org/abs/2410.02355)) brought a major improvement in knowledge editing by introducing a **null-space projection** — ensuring edits don’t overwrite existing knowledge.
+While the naive formulation works in principle, it often interferes with unrelated concepts. A recent method called **AlphaEdit** ([arXiv:2410.02355](https://arxiv.org/abs/2410.02355)) brought a major improvement in knowledge editing by introducing a **null-space projection** — ensuring edits don’t overwrite existing knowledge.
 
-Inspired by this, I extended the idea to diffusion models.  
-We ensure that updates to \( W \) lie in the *left null space* of \( K_0 \) so that the preservation set remains unaffected.
+Formally, we ensure that updates to $ W $ (call it \tilde{delta}) lie in the *left null space* of $ K_0 $ so that $(W + \tilde{\Delta})K_0 = W K_0 + \tilde{\Delta}K_0 = W K_0$, i.e. the preservation set remains unaffected.
 
-Formally, if \( U \) is an orthonormal basis for the null space of \( K_0 \) (i.e., \( U^\top K_0 = 0 \)),  
-we define the projection matrix:
+One way to design such updates is, if $ U $ is an orthonormal basis for the null space of $ K_0 $ (i.e., $ U^\top K_0 = 0 $), we define the projection matrix:
 
 $$
 P = U U^\top
