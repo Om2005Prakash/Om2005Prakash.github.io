@@ -10,11 +10,11 @@ layout: page
        align="right"
        width="200"
        style="float: right; margin-left: 20px; border-radius: 10px;" />
-  Hello, I’m Om! I’m studying Mathematics and Computing at IISc. Lately, I’ve been obsessed with generative AI—Diffusion Models, in particular, fascinate me.
-  I also love running and can’t go a day without music.
+  Hello, I’m Om! I’m studying Mathematics and Computing at IISc. Lately, I’ve been obsessed with generative AI—Diffusion Models, in particular, fascinate me. Taking inspiration from book "Show Your Work!", I decided to put little pieces of my work here. I also love trekking, running and can’t go a day without music.
 </p>
 
-<br><br>
+<br><br><br>
+
 ---
 
 
