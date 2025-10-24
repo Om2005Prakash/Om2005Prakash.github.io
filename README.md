@@ -4,7 +4,8 @@ permalink: "/about/"
 layout: page
 ---
 
-<!-- ![Unlearning]() -->
+Sneak Peek to my latest unlearning project: (for background checkout blog)
+![Unlearning](https://raw.githubusercontent.com/Om2005Prakash/Om2005Prakash.github.io/refs/heads/master/blog_assets/unlearning%20latest.gif)
 
 ## Github Pages
 
