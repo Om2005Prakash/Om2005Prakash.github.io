@@ -17,7 +17,5 @@ layout: page
 
 ---
 
-
-
 **Sneak Peek** to my latest project:  
 ![Unlearning](https://raw.githubusercontent.com/Om2005Prakash/Om2005Prakash.github.io/refs/heads/master/blog_assets/unlearning%20latest.gif)
