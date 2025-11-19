@@ -18,5 +18,7 @@ layout: page
 ---
 
 **Sneak Peek** to my latest project:  
-![Unlearning](https://raw.githubusercontent.com/Om2005Prakash/Om2005Prakash.github.io/refs/heads/master/blog_assets/Northern_Lights_Approx.gif)
-![Unlearning](https://raw.githubusercontent.com/Om2005Prakash/Om2005Prakash.github.io/refs/heads/master/blog_assets/Rose_Approx.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Om2005Prakash/Om2005Prakash.github.io/refs/heads/master/blog_assets/Northern_Lights_Approx.gif" width="500"><br>
+  <img src="https://raw.githubusercontent.com/Om2005Prakash/Om2005Prakash.github.io/refs/heads/master/blog_assets/Rose_Approx.gif" width="500">
+</p>
