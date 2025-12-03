@@ -7,6 +7,7 @@ categories: media
 
 ![CLIP Editing Results](https://raw.githubusercontent.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion/refs/heads/main/assets/results.png)
 
+
 > **Note:** This is a solution write-up for our submission to the **Unlearning and Model Editing (U&ME) Workshop at ICCV '25**.  
 > * [Workshop Website](https://sites.google.com/view/u-and-me-workshop/)
 > * [Current Leaderboard](https://shreyanshhub.github.io/GENMU-/leaderboard.html)
