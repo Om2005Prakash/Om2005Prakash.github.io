@@ -26,7 +26,7 @@ external:                       # accepts {file, title, url, icon, sidebaricon}
   - {title: Mail, icon: envelope, url: "mailto:omprakashc@iisc.ac.in"}
   - {title: Github, icon: github, url: "https://github.com/Om2005Prakash"}
   - {file: "README.md", sidebaricon: address-card}
-  - {title: CV, icon: , url: "/assets/files/cv.pdf"}
+  - {title: CV, icon: file-alt, url: "/blog_assets/CV.pdf"}
   # - {title: Subscribe, icon: rss, url: "/feed.xml"}
 
 comments:
