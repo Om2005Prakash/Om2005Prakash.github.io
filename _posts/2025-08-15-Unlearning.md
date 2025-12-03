@@ -100,9 +100,8 @@ By projecting the update through \\( P \\), we ensure edits are applied strictly
 
 ---
 
-## Making It Work: Guidance From the UNet
+## Guidance From the UNet
 
-A subtle challenge remains:
 > How do we choose the target embeddings \\( V_1 \\) for the concepts we want to edit?
 
 A naive choice is \\( V_1 = W K_1^* \\), where \\( K_1^* \\) are embeddings of the target (replacement) concepts. However, this quickly leads to **overfitting** — edits perform well on training prompts but fail on unseen ones.
