@@ -7,6 +7,7 @@ categories: media
 
 ![CLIP Editing Results](https://raw.githubusercontent.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion/refs/heads/main/assets/results.png)
 
+
 > **Note:** This is a solution write-up for our submission to the **Unlearning and Model Editing (U&ME) Workshop at ICCV '25**.  
 > * [Workshop Website](https://sites.google.com/view/u-and-me-workshop/)
 > * [Current Leaderboard](https://shreyanshhub.github.io/GENMU-/leaderboard.html)
@@ -22,6 +23,10 @@ As text-to-image models become increasingly capable, they also inherit the biase
 
 Editing can serve as a form of unlearning. If we can edit an unwanted concept into a safe target concept, we can effectively "forget" the original one. This post describes a method I call **Null-Space Constrained Concept Editing**, adapted from a paper called **AlphaEdit** ([arXiv:2410.02355](https://arxiv.org/abs/2410.02355)), which enables *selective editing* in diffusion models while preserving unrelated knowledge.
 
+In this post, we focus on editing the **CLIP text encoder** to realign the embeddings of unwanted concepts toward safe targets. Crucially, we do **not** modify the UNet weights directly; however, we leverage the UNet to guide the update direction (as detailed in the section *Guidance From the UNet*).
+
+
+
 ---
 
 ## The Problem: Naive Editing
@@ -36,7 +41,7 @@ $$
 \right)
 $$
 
-Here, $V_0 = WK_0$ represents the original outputs we wish to maintain.
+Here, \( V_0 = WK_0 \) represents the original outputs we wish to maintain.
 
 **The issue:** Minimizing the edit error often requires distorting $W$ in directions that inadvertently alter the output for $K_0$. This leads to the classic problem of **"catastrophic forgetting."**
 
@@ -47,6 +52,8 @@ Here, $V_0 = WK_0$ represents the original outputs we wish to maintain.
 A recent method, **AlphaEdit**, solves this geometrically. Instead of trying to balance two competing errors, it restricts updates to the **null space** of the preserved knowledge.
 
 The core idea is to construct an update $\Delta$ that acts **only** where $K_0$ has no presence.
+
+
 
 ### 1. Constructing the Projector
 We treat the update as a low-rank modification projected onto a specific subspace. First, we analyze the covariance of the preservation keys using SVD:
