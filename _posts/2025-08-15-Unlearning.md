@@ -22,76 +22,75 @@ This post describes a method I call **Null-Space Constrained Concept Editing** �
 
 ---
 
-## How to perform Editing? (Naive Way)
-
 <!-- Knowledge-editing methods have recently gained attention in large language models (LLMs) for similar safety concerns. So, I wanted to test whether those same methods could be applied to the **CLIP text encoder** used in diffusion models, which shares a similar architecture with LLMs. -->
 
-A naive editing objective for a single linear layer \( W \) can be defined as:
+## The Problem: Naive Editing
+A naive objective for editing a single linear layer $W$ attempts to balance editing new concepts ($K_1$) while preserving old ones ($K_0$):
 
 $$
-\min_{\tilde{\Delta}} \left( 
-\| (W + \tilde{\Delta})K_1 - V_1 \|^2 
+\min_{\Delta} \left( 
+\underbrace{\| (W + \Delta)K_1 - V_1 \|^2}_{\text{Edit Error}} 
 + 
-\| (W + \tilde{\Delta})K_0 - V_0 \|^2
+\underbrace{\| (W + \Delta)K_0 - V_0 \|^2}_{\text{Preservation Error}}
 \right)
 $$
 
-Here:
-- \( K_1 \): inputs corresponding to **concepts to be edited**,  
-- \( K_0 \): inputs for **concepts to be preserved**,  
-- \( V_1 \), \( V_0 \): their respective desired outputs.  
+Here, $V_0 = WK_0$ represents the original outputs we wish to maintain.
 
-where V_0:= W K_0 i.e. the original outputs and V_1 are chosen s.t. to produce the desired edited output. This objective attempts to *edit* certain concepts while *preserving* others. However, in practice, the preserved concepts can still be unintentionally distorted.
+**The issue:** Minimizing edit error often requires distorting $W$ in directions that inadvertently alter the output for $K_0$, leading to "catastrophic forgetting."
 
 ---
 
-## Null-Space Constrained Editing
+## The Solution: Null-Space Constrained Editing (AlphaEdit)
+A recent method, **AlphaEdit** ([arXiv:2410.02355](https://arxiv.org/abs/2410.02355)), solves this geometrically. Instead of balancing errors, it restricts updates to the **null space** of the preserved knowledge.
 
-While the naive formulation works in principle, it often interferes with unrelated concepts. A recent method called **AlphaEdit** ([arXiv:2410.02355](https://arxiv.org/abs/2410.02355)) brought a major improvement in knowledge editing by introducing a **null-space projection** — ensuring edits don’t overwrite existing knowledge.
+The core idea is to construct an update $\Delta$ that acts **only** where $K_0$ has no presence.
 
-Formally, we ensure that updates to $ W $ (call it \tilde{delta}) lie in the *left null space* of $ K_0 $ so that $(W + \tilde{\Delta})K_0 = W K_0 + \tilde{\Delta}K_0 = W K_0$, i.e. the preservation set remains unaffected.
+### 1. Constructing the Projector
+We treat the update as a low-rank modification projected onto a specific subspace. We analyze the covariance of the preservation keys using SVD:
+$$K_0 K_0^T = U \Sigma U^T$$
+We select the eigenvectors in $U$ corresponding to the smallest eigenvalues (effectively zero). Let $\tilde{U}$ be the matrix of these "null" eigenvectors. We define our projection matrix $P$ as:
+$$P = \tilde{U}\tilde{U}^T$$
 
-One way to design such updates is, if $ U $ is an orthonormal basis for the null space of $ K_0 $ (i.e., $ U^\top K_0 = 0 $), we define the projection matrix:
+**The geometric intuition:** Because $\tilde{U}$ spans the null space of the input correlations, any vector projected by $P$ is orthogonal to the existing knowledge $K_0$. Therefore:
+$$P K_0 \approx 0$$
+
+### 2. The Null-Space Objective
+We constrain our update to be of the form $\Delta P$. Substituting this into the naive objective:
 
 $$
-P = U U^\top
+\min_{\Delta} \left( \| (W + \Delta P)K_1 - V_1 \|^2 + \| (W + \underbrace{\Delta P)K_0}_{\approx 0} - V_0 \|^2 \right)
 $$
 
-This gives the constrained objective:
+Because $P K_0 \approx 0$, the preservation term vanishes naturally ($WK_0 = V_0$). The constraint ensures we **cannot** hurt the old knowledge. The problem simplifies to:
 
 $$
 \min_{\Delta} \| (W + \Delta P)K_1 - V_1 \|^2
-+ 
-\| (W + \Delta P)K_0 - V_0 \|^2
 $$
 
-Since \( P K_0 = 0 \), the second term vanishes, leaving:
+### 3. Closed-Form Solution
+This simplified objective admits a closed-form solution for the update:
 
 $$
-\min_{\Delta} \| (W + \Delta P)K_1 - V_1 \|^2
+\Delta_{\text{edit}} = R K_1^T P (K_1 K_1^T P + \lambda I)^{-1}
 $$
 
-The closed-form solution for this objective is:
+Where $R = V_1 - W K_1$ is the residual error of the unedited model.
 
-$$
-\Delta_{\text{edit}} = R K_1^\top P (K_1 K_1^\top P + I)^{-1}, \quad
-R = V_1 - W K_1
-$$
-
-This projection ensures that preserved knowledge remains completely intact — allowing the model to *forget without forgetting*.
+By projecting the update through $P$, we ensure edits are applied strictly in the "empty space" of the model's knowledge, allowing us to **forget (errors) without forgetting (facts).**
 
 ---
 
 ## Making It Work: Guidance From the UNet
 
 A subtle challenge remains:  
-> How do we choose the target embeddings \( V_1 \) for the concepts we want to edit?
+> How do we choose the target embeddings $ V_1 $ for the concepts we want to edit?
 
-A naive choice is \( V_1 = W K_1^* \), where \( K_1^* \) are embeddings of the target (replacement) concepts.  
+A naive choice is $ V_1 = W K_1^* $, where $ K_1^* $ are embeddings of the target (replacement) concepts.  
 However, this quickly leads to **overfitting** — edits perform well on training prompts but fail on unseen ones.
 
 The fix came from leveraging the **UNet**.  
-I designed a small refinement loop that adjusts \( V_1 \) so that the UNet’s outputs for the edited and target prompts align:
+I designed a small refinement loop that adjusts $ V_1 $ so that the UNet’s outputs for the edited and target prompts align:
 
 $$
 V_1^{(t+1)} = V_1^{(t)} - \eta \nabla_{V_1} \, \text{MSE}(\text{UNet}(V_1^{(t)}), \text{UNet}(V_1^*))
@@ -128,20 +127,7 @@ The results show that our method improves the *forget–retain tradeoff* by roug
 
 ---
 
-## Looking Ahead
+## Further
 
-The method works remarkably well but raises a few open questions:
-
-- How many concepts can be edited before the model’s coherence breaks down?  
-- Can we automate prompt generation to avoid overfitting?  
-- Could causal tracing — like in LLMs — reveal *which layers* encode specific concepts in CLIP?
-
-These are the directions I’m currently exploring.  
-The long-term goal is to build diffusion models that can **responsibly unlearn** — preserving creativity and safety side by side.
-
-If you’d like to dive deeper, the full code and experiments are available here:  
+If you’d like to dive deeper, the full code and a detailed report of experiments are available here:  
 👉 [Om2005Prakash/Editing-Concepts-in-Stable-Diffusion](https://github.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion)
-
----
-
-*Thanks for reading. If you’re working on diffusion unlearning, I’d love to hear how you’re approaching the “forget without forgetting” challenge.*
