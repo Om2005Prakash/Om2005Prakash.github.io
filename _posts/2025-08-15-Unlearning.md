@@ -116,7 +116,7 @@ This **UNet-guided refinement** provides stable target representations that gene
 
 ---
 
-## Experiments: Unlearning in the Wild
+## Experiments
 
 The approach was evaluated on **Stable Diffusion 1.4**, using 20 diverse concepts (objects, actions, and art styles).
 
