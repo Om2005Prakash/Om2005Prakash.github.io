@@ -7,7 +7,6 @@ categories: media
 
 ![CLIP Editing Results](https://raw.githubusercontent.com/Om2005Prakash/Editing-Concepts-in-Stable-Diffusion/refs/heads/main/assets/results.png)
 
-
 > **Note:** This is a solution write-up for our submission to the **Unlearning and Model Editing (U&ME) Workshop at ICCV '25**.  
 > * [Workshop Website](https://sites.google.com/view/u-and-me-workshop/)
 > * [Current Leaderboard](https://shreyanshhub.github.io/GENMU-/leaderboard.html)
@@ -31,7 +30,7 @@ In this post, we focus on editing the **CLIP text encoder** to realign the embed
 
 ## The Problem: Naive Editing
 
-A naive objective for editing a single linear layer $W$ attempts to balance editing new concepts ($K_1$) while preserving old ones ($K_0$):
+A naive objective for editing a single linear layer \\( W \\) attempts to balance editing new concepts (\\( K_1 \\)) while preserving old ones (\\( K_0 \\)):
 
 $$
 \min_{\Delta} \left( 
@@ -41,9 +40,9 @@ $$
 \right)
 $$
 
-Here, \( V_0 = WK_0 \) represents the original outputs we wish to maintain.
+Here, \\( V_0 = WK_0 \\) represents the original outputs we wish to maintain.
 
-**The issue:** Minimizing the edit error often requires distorting $W$ in directions that inadvertently alter the output for $K_0$. This leads to the classic problem of **"catastrophic forgetting."**
+**The issue:** Minimizing the edit error often requires distorting \\( W \\) in directions that inadvertently alter the output for \\( K_0 \\). This leads to the classic problem of **"catastrophic forgetting."**
 
 ---
 
@@ -51,31 +50,37 @@ Here, \( V_0 = WK_0 \) represents the original outputs we wish to maintain.
 
 A recent method, **AlphaEdit**, solves this geometrically. Instead of trying to balance two competing errors, it restricts updates to the **null space** of the preserved knowledge.
 
-The core idea is to construct an update $\Delta$ that acts **only** where $K_0$ has no presence.
+The core idea is to construct an update \\( \Delta \\) that acts **only** where \\( K_0 \\) has no presence.
 
 
 
 ### 1. Constructing the Projector
 We treat the update as a low-rank modification projected onto a specific subspace. First, we analyze the covariance of the preservation keys using SVD:
 
-$$K_0 K_0^T = U \Sigma U^T$$
+$$
+K_0 K_0^T = U \Sigma U^T
+$$
 
-We select the eigenvectors in $U$ corresponding to the smallest eigenvalues (effectively zero). Let $\tilde{U}$ be the matrix of these "null" eigenvectors. We define our projection matrix $P$ as:
+We select the eigenvectors in \\( U \\) corresponding to the smallest eigenvalues (effectively zero). Let \\( \tilde{U} \\) be the matrix of these "null" eigenvectors. We define our projection matrix \\( P \\) as:
 
-$$P = \tilde{U}\tilde{U}^T$$
+$$
+P = \tilde{U}\tilde{U}^T
+$$
 
-**The geometric intuition:** Because $\tilde{U}$ spans the null space of the input correlations, any vector projected by $P$ is orthogonal to the existing knowledge $K_0$. Therefore:
+**The geometric intuition:** Because \\( \tilde{U} \\) spans the null space of the input correlations, any vector projected by \\( P \\) is orthogonal to the existing knowledge \\( K_0 \\). Therefore:
 
-$$P K_0 \approx 0$$
+$$
+P K_0 \approx 0
+$$
 
 ### 2. The Null-Space Objective
-We constrain our update to be of the form $\Delta P$. Substituting this into the naive objective:
+We constrain our update to be of the form \\( \Delta P \\). Substituting this into the naive objective:
 
 $$
 \min_{\Delta} \left( \| (W + \Delta P)K_1 - V_1 \|^2 + \| (W + \underbrace{\Delta P)K_0}_{\approx 0} - V_0 \|^2 \right)
 $$
 
-Because $P K_0 \approx 0$, the preservation term vanishes naturally (since $WK_0 = V_0$). The constraint ensures we **cannot** hurt the old knowledge. The problem simplifies to:
+Because \\( P K_0 \approx 0 \\), the preservation term vanishes naturally (since \\( WK_0 = V_0 \\)). The constraint ensures we **cannot** hurt the old knowledge. The problem simplifies to:
 
 $$
 \min_{\Delta} \| (W + \Delta P)K_1 - V_1 \|^2
@@ -88,20 +93,20 @@ $$
 \Delta_{\text{edit}} = R K_1^T P (K_1 K_1^T P + \lambda I)^{-1}
 $$
 
-Where $R = V_1 - W K_1$ is the residual error of the unedited model.
+Where \\( R = V_1 - W K_1 \\) is the residual error of the unedited model.
 
-By projecting the update through $P$, we ensure edits are applied strictly in the "empty space" of the model's knowledge, allowing us to **forget (errors) without forgetting (facts).**
+By projecting the update through \\( P \\), we ensure edits are applied strictly in the "empty space" of the model's knowledge, allowing us to **forget (errors) without forgetting (facts).**
 
 ---
 
 ## Making It Work: Guidance From the UNet
 
 A subtle challenge remains:
-> How do we choose the target embeddings $V_1$ for the concepts we want to edit?
+> How do we choose the target embeddings \\( V_1 \\) for the concepts we want to edit?
 
-A naive choice is $V_1 = W K_1^*$, where $K_1^*$ are embeddings of the target (replacement) concepts. However, this quickly leads to **overfitting** — edits perform well on training prompts but fail on unseen ones.
+A naive choice is \\( V_1 = W K_1^* \\), where \\( K_1^* \\) are embeddings of the target (replacement) concepts. However, this quickly leads to **overfitting** — edits perform well on training prompts but fail on unseen ones.
 
-The fix came from leveraging the **UNet**. I designed a small refinement loop that adjusts $V_1$ so that the UNet’s outputs for the edited and target prompts align:
+The fix came from leveraging the **UNet**. I designed a small refinement loop that adjusts \\( V_1 \\) so that the UNet’s outputs for the edited and target prompts align:
 
 $$
 V_1^{(t+1)} = V_1^{(t)} - \eta \nabla_{V_1} \, \text{MSE}(\text{UNet}(V_1^{(t)}), \text{UNet}(V_1^*))
