@@ -18,7 +18,7 @@ layout: page
   </p>
 
   <p style="text-align: justify;">
-    Outside academics, I enjoy <b>trekker</b> 🥾 and <b>long-distance runner</b> 🏃 both of which help me find peace.
+    Outside academics, I enjoy <b>trekking</b> 🥾 and <b>long-distance running</b> 🏃 both of which help me find peace.
   </p>
 
   <p style="display: flex; align-items: center; gap: 8px;">
