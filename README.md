@@ -4,20 +4,28 @@ permalink: "/about/"
 layout: page
 ---
 
-<p style="text-align: justify;">
+<div style="overflow: auto;">
   <img src="https://avatars.githubusercontent.com/u/147433469?s=400&u=5b4e960ad43870e83ae4ee5b8d344b80d4e6d0e5&v=4"
        alt="Om"
        align="right"
-       width="200px"
-       style="float: right; margin-left: 20px; border-radius: 10px;" />
-  Hello, I’m Om! I’m studying Mathematics and Computing at IISc. Lately, I’ve been obsessed with generative AI—Diffusion Models, in particular, fascinate me. Taking inspiration from book "Show Your Work!", I decided to put little pieces of my work here. I also love trekking, running and can’t go a day without music.
-</p>
+       width="180px"
+       style="float: right; margin-left: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
 
-<br><br><br>
+  <p style="text-align: justify;">
+    Hi! I’m Om, an undergraduate student studying <strong>Mathematics and Computing</strong> at the 
+  <strong>Indian Institute of Science (IISc)</strong>. My primary academic interest lies in 
+  <strong>generative modeling</strong> and related areas of machine learning.
+  </p>
 
----
-**Sneak Peek** to my latest project (Editing Concepts in Diffusion Model):
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Om2005Prakash/Om2005Prakash.github.io/refs/heads/master/blog_assets/Northern_Lights_Approx.gif" width="600"><br>
-  <img src="https://raw.githubusercontent.com/Om2005Prakash/Om2005Prakash.github.io/refs/heads/master/blog_assets/Rose_Approx.gif" width="600">
-</p>
+  <p style="text-align: justify;">
+    Outside academics, I enjoy <b>trekker</b> 🥾 and <b>long-distance runner</b> 🏃 both of which help me find peace.
+  </p>
+
+  <p style="display: flex; align-items: center; gap: 8px;">
+    I also spend a lot of time with music. Current favorite: 
+    <a href="https://open.spotify.com/track/YOUR_TRACK_ID" target="_blank" rel="noopener" style="display: flex; align-items: center; text-decoration: none; color: #1DB954; font-weight: bold;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" width="20px" style="margin-right: 6px;"> 
+      A Sort of Homecoming
+    </a>
+  </p>
+</div>
