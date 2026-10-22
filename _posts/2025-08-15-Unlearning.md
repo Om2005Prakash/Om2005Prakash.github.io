@@ -39,7 +39,7 @@ $$
 \right)
 $$
 
-Here, \\( V_0 = WK_0 \\) represents the original outputs we wish to maintain.
+Here, \\( V_0 = WK_0 \\) represents the original outputs we wish to maintain and \\( V_1 \\) represents the desired outputs from \\( K_1 \\).
 
 **The issue:** Minimizing the edit error often requires distorting \\( W \\) in directions that inadvertently alter the output for \\( K_0 \\). This leads to the classic problem of **"catastrophic forgetting."**
 
