@@ -16,16 +16,14 @@ categories: media
 
 ## Motivation for Unlearning
 
-Over the past few months, I’ve been exploring a deceptively simple question:
-**Can a diffusion model forget — without losing everything else it knows?**
+Over the past few months, I’ve been exploring a simple question:
+**Can a diffusion model forget without losing everything else it knows?**
 
-As text-to-image models become increasingly capable, they also inherit the biases, copyrighted material, and harmful content of their massive training datasets. From *LAION-5B* to other web-scale corpora powering today’s generative systems, this raises a critical issue: *how* can we make them unlearn responsibly?
+As text-to-image models become increasingly capable, they also inherit the biases, copyrighted material, and harmful content of their massive training datasets. This raises a critical issue: *how* can we make them unlearn responsibly?
 
 Editing can serve as a form of unlearning. If we can edit an unwanted concept into a safe target concept, we can effectively "forget" the original one. This post describes a method I call **Null-Space Constrained Concept Editing**, adapted from a paper called **AlphaEdit** ([arXiv:2410.02355](https://arxiv.org/abs/2410.02355)), which enables *selective editing* in diffusion models while preserving unrelated knowledge.
 
-In this post, we focus on editing the **CLIP text encoder** to realign the embeddings of unwanted concepts toward safe targets. Crucially, we do **not** modify the UNet weights directly; however, we leverage the UNet to guide the update direction (as detailed in the section *Guidance From the UNet*).
-
-
+In this post, we focus on editing the **CLIP text encoder** to align the embeddings of unwanted concepts toward safe targets. Crucially, we do **not** modify the UNet weights directly; however, we leverage the UNet to guide the update direction (as detailed in the section *Guidance From the UNet*).
 
 ---
 
@@ -104,7 +102,7 @@ By projecting the update through \\( P \\), we ensure edits are applied strictly
 
 > How do we choose the target embeddings \\( V_1 \\) for the concepts we want to edit?
 
-A naive choice is \\( V_1 = W K_1^* \\), where \\( K_1^* \\) are embeddings of the target (replacement) concepts. However, this quickly leads to **overfitting** — edits perform well on training prompts but fail on unseen ones.
+A naive choice is \\( V_1 = W K_1^* \\), where \\( K_1^* \\) are embeddings of the target (replacement) concepts. However, this quickly leads to **overfitting** edits perform well on training prompts but fail on unseen ones.
 
 The fix came from leveraging the **UNet**. I designed a small refinement loop that adjusts \\( V_1 \\) so that the UNet’s outputs for the edited and target prompts align:
 
@@ -130,7 +128,7 @@ The approach was evaluated on **Stable Diffusion 1.4**, using 20 diverse concept
 * **Forget Score:** Fraction of images where the edited concept was *not recognized* by LLaVA.
 * **Retain Score:** Fraction of images where unedited concepts were *correctly recognized*.
 
-The results show that our method improves the *forget–retain tradeoff* by roughly **20%** compared to prior baselines, with most concepts unlearned using only **one edit** in CLIP.
+The results show that our method improves the *forget-retain tradeoff* by roughly **20%** compared to prior baselines, with most concepts unlearned using only **one edit** in CLIP.
 
 | Method | Harmonic Mean (Forget $\times$ Retain) |
 | :--- | :---: |
