@@ -62,6 +62,63 @@
 .katex-display
   overflow: auto hidden
 
+// About page
+
+.about-page
+  margin-top: 1.75rem
+
+.about-intro
+  display: grid
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 19rem)
+  gap: clamp(2.5rem, 7vw, 5rem)
+  align-items: start
+
+.about-copy
+  padding-top: .1rem
+
+  p
+    margin: 0 0 1.35rem
+    text-align: justify
+
+.about-music a
+  display: inline-flex
+  gap: .4rem
+  align-items: center
+  color: #1aa34a
+  font-weight: bold
+  white-space: nowrap
+
+  img
+    width: 1.1rem
+    height: 1.1rem
+    margin: 0
+    border-radius: 0
+
+.about-portrait
+  margin: 0
+
+  > img
+    display: block
+    width: 100%
+    height: auto
+    aspect-ratio: 1
+    margin: 0
+    border-radius: .35rem
+    object-fit: cover
+    object-position: center 28%
+
+@media (max-width: 42rem)
+  .about-intro
+    grid-template-columns: 1fr
+    gap: 1.5rem
+
+  .about-portrait
+    max-width: 30rem
+
+@media (max-width: 28rem)
+  .about-music a
+    white-space: normal
+
 .rouge-table, .gist
   pre, tr, td
     background: inherit!important
