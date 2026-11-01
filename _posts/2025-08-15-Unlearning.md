@@ -130,7 +130,7 @@ The approach was evaluated on **Stable Diffusion 1.4**, using 20 diverse concept
 
 The results show that our method improves the *forget-retain tradeoff* by roughly **20%** compared to prior baselines, with most concepts unlearned using only **one edit** in CLIP.
 
-| Method | Harmonic Mean (Forget \\( \times \\) Retain) |
+| Method | Harmonic Mean (Forget and Retain Score) |
 | :--- | :---: |
 | Unedited Model | 0.313 |
 | Unified Concept Editing (UCE) | 0.480 |
