@@ -110,7 +110,7 @@ $$
 V_1^{(t+1)} = V_1^{(t)} - \eta \nabla_{V_1} \, \text{MSE}(\text{UNet}(V_1^{(t)}), \text{UNet}(V_1^*))
 $$
 
-This **UNet-guided refinement** provides stable target representations that generalize well, even for indirect prompts that don’t explicitly mention the forgotten concept. For example, after editing "Van Gogh" $\to$ "Monet" in CLIP, the prompt *"starry night"* generated a Monet-style painting, even though "starry night" wasn’t seen during the editing process.
+This **UNet-guided refinement** provides target that generalize well, even for indirect prompts that don’t explicitly mention the forgotten concept. For example, after editing "Van Gogh" \\( \to \\) "Monet" in CLIP, the prompt *"starry night"* generated a Monet-style painting, even though "starry night" wasn’t seen during the editing process.
 
 ---
 
@@ -130,7 +130,7 @@ The approach was evaluated on **Stable Diffusion 1.4**, using 20 diverse concept
 
 The results show that our method improves the *forget-retain tradeoff* by roughly **20%** compared to prior baselines, with most concepts unlearned using only **one edit** in CLIP.
 
-| Method | Harmonic Mean (Forget $\times$ Retain) |
+| Method | Harmonic Mean (Forget \\( \times \\) Retain) |
 | :--- | :---: |
 | Unedited Model | 0.313 |
 | Unified Concept Editing (UCE) | 0.480 |

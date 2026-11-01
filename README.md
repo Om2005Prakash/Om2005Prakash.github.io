@@ -13,9 +13,9 @@ layout: page
 
       <p class="about-music">
         I also spend a lot of time with music. Current favorite:
-        <a href="https://open.spotify.com/track/1p57I6FwGaY5a7Lmn04nG4?si=720d1fb86a6545d7" target="_blank" rel="noopener noreferrer">
+        <a href="https://open.spotify.com/track/2x5IXUFOcvvBUtEpnCBNlp?si=de003d84524b47ba" target="_blank" rel="noopener noreferrer">
           <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="" width="18" height="18">
-          A Sort of Homecoming
+          Alive And Kicking
         </a>
       </p>
 
