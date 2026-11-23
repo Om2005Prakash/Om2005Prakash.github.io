@@ -7,9 +7,9 @@ layout: page
 <div class="about-page">
   <div class="about-intro">
     <div class="about-copy">
-      <p>Hi! I’m Om, an undergraduate student studying <strong>Mathematics and Computing</strong> at the <strong>Indian Institute of Science (IISc)</strong>. My primary academic interest lies in <strong>generative modeling</strong> and related areas of machine learning.</p>
+      <p>Hi! I’m Om, an undergraduate student studying Mathematics and Computing at the Indian Institute of Science (IISc). My primary academic interest lies in generative modeling and related areas of machine learning.</p>
 
-      <p>Outside academics, I enjoy <strong>trekking</strong> 🥾 and <strong>long-distance running</strong> 🏃 both of which help me find peace.</p>
+      <p>Outside academics, I enjoy trekking and long-distance running both of which help me find peace.</p>
 
       <p class="about-music">
         I also spend a lot of time with music. Current favorite:
