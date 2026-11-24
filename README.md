@@ -31,13 +31,5 @@ layout: page
       >
     </figure>
   </div>
-
-  <section class="about-talks">
-    <h2>Talks</h2>
-    <ul>
-      <li><a href="/Talks/Reward%20Alignment.pdf">Adjoint Matching: Reward Alignment via Stochastic Optimal Control</a> — June 2026</li>
-      <li><a href="/Talks/Diffusion%20Models.pdf">Diffusion Models</a> — June 2025</li>
-    </ul>
-  </section>
 </div>
 
